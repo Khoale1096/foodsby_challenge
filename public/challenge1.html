@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Foodsby Code Challenge Front-end</title>
+	<meta charset="UTF-8">
+
+	<style>
+		.datePicker {
+			color: black;
+			padding-right: 3px;
+		}
+
+		.restaurant {
+			color: black;
+			padding-right: 3px;
+		}
+
+		.container {
+			position: relative;
+			text-align: center;
+			color: white;
+		}
+
+		.start_button {
+			display: block;
+			border: none;
+			color: white;
+			background: red;
+			padding: 5px 20px;
+			font-size: 20px;
+			line-height: 30px;
+			margin: 20px auto;
+		}		
+		
+		.no_button {
+			display: block;
+			border: none;
+			color: white;
+			background: black;
+			padding: 5px 20px;
+			font-size: 20px;
+			line-height: 30px;
+			margin: 20px auto;
+		}
+
+		#weekDayBox {
+			width: 50%;
+			height: 5%;
+			box-sizing: border-box;
+			padding-top: 50px;
+			padding-left: 300px;
+		}
+		#resultBox {
+			width: 75%;
+			height: 5%;
+			box-sizing: border-box;
+			padding-top: 100px;
+			padding-left: 300px;
+		}
+		#result {
+			width: 50%;
+			height: 5%;
+			box-sizing: border-box;
+			display: inline-block;
+			padding-top: 10px;
+			padding-left: 3px;
+		}
+		#time {
+			width: 50%;
+			height: 5%;
+			box-sizing: border-box;
+			display: inline-block;
+			padding-top: 10px;
+			padding-left: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div id="weekDayBox">
+		<span id="weekCal1" class="datePicker">
+		</span>
+	</div>
+	<div id="resultBox">
+
+	</div>
+
+<link rel="Stylesheet"  href="static/css/cleanslate.css" />
+<link rel="Stylesheet"  href="static/css/jquery.weekLine.css" />
+<link rel="shortcut icon" href="">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="scripts/jquery.weekLine.js"></script> 
+<link href="https://fonts.googleapis.com/css?family=Cabin|Roboto+Condensed|Russo+One|Signika|Ubuntu" rel="stylesheet">
+<script>
+
+ $.getJSON("https://api.myjson.com/bins/le62d", function(json) {
+	var dayArray = json.dropoffs;
+	var result = dayArray.reduce(function(map, res) {
+		map[res.day] = res.deliveries;
+		return map;
+	}, {});
+
+	$("#weekCal1").weekLine({
+        onChange: function () {
+			var shownArray = $(this).weekLine('getSelected','labels').split(',')
+			document.getElementById("resultBox").innerHTML = ""
+
+			for (var i = 0; i<shownArray.length; i++) {
+				if (shownArray[i] in result) {
+					var restaurant = result[shownArray[i]]
+					for (var j = 0; j < restaurant.length; j++) {
+						var inputText = document.getElementById("resultBox");
+
+						var logo = document.createElement("img");
+						logo.src = restaurant[j].logoUrl;
+						logo.setAttribute("height", "200");
+						logo.setAttribute("width", "300");
+						document.getElementById("resultBox").appendChild(logo);
+
+						if (restaurant[j].soldOut) {
+							inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+							inputText.innerHTML += "<div id='time'>" +"Sold Out" + "</div>"
+
+							inputText.innerHTML += "<hr>"
+							continue
+						}
+
+						var time = new Date();
+						var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+						var dayName = days[time.getDay()];
+						if (shownArray[i] == dayName) {
+							var hour = time.getHours()
+							var minute = time.getMinutes()
+							var second = time.getSeconds()
+							
+							var cutoffTime = restaurant[j].cutoff.split(":")
+							if (hour > cutoffTime[0]) {
+								inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+								inputText.innerHTML += "<div id='time'>" +"Order by: "+ restaurant[j].cutoff +"<br>" + "Delivered by: " + restaurant[j].dropoff + "</div>"
+								inputText.innerHTML += "<button class='no_button'>Cut-off Time Passed</button>"
+								inputText.innerHTML += "<hr>"
+								continue
+							} else if (hour == cutoffTime[0] && minute > cutoffTime[1]) {
+								inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+								inputText.innerHTML += "<div id='time'>" +"Order by: "+ restaurant[j].cutoff +"<br>" + "Delivered by: " + restaurant[j].dropoff + "</div>"
+								inputText.innerHTML += "<button class='no_button'>Cut-off Time Passed</button>"
+								inputText.innerHTML += "<hr>"
+								continue
+							} else if (hour == cutoffTime[0] && minute == cutoffTime[1] && second > cutoffTime[2]) {
+								inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+								inputText.innerHTML += "<div id='time'>" +"Order by: "+ restaurant[j].cutoff +"<br>" + "Delivered by: " + restaurant[j].dropoff + "</div>"
+								inputText.innerHTML += "<button class='no_button'>Cut-off Time Passed</button>"
+								inputText.innerHTML += "<hr>"
+								continue
+							}
+							inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+							inputText.innerHTML += "<div id='time'>" +"Order by: "+ restaurant[j].cutoff +"<br>" + "Delivered by: " + restaurant[j].dropoff + "</div>"
+							inputText.innerHTML += "<button class='start_button'>Select Restaurant</button>"
+							inputText.innerHTML += "<hr>"
+						}
+						
+						inputText.innerHTML += "<div id='result'>"+ restaurant[j].restaurantName + "</div>"
+
+						inputText.innerHTML += "<div id='time'>" +"Order by: "+ restaurant[j].cutoff +"<br>" + "Delivered by: " + restaurant[j].dropoff + "</div>"
+						inputText.innerHTML += "<button class='start_button'>Select Restaurant</button>"
+						inputText.innerHTML += "<hr>"
+					}
+				}
+			}
+        }
+ });
+});
+
+</script>
+
+</body>
+</html>
